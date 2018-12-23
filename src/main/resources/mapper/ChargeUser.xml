@@ -1,0 +1,94 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.UserDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+
+    <insert id="insertEntity" parameterType="User" useGeneratedKeys="true" keyProperty="userId">
+    	INSERT INTO tb_user
+        (username,mobile,password,
+        ic_card,address,openid,balance,car_type,number_plate,ic_id)
+        VALUES
+        (#{username},#{mobile},#{password},
+        #{icCard},#{address},#{openid},0,#{carType},#{numberPlate},#{icId})
+    </insert>
+
+    <delete id="deleteEntityById" parameterType="long">
+        DELETE FROM tb_user where user_id = #{id}
+    </delete>
+
+    <delete id="deleteEntityByIds">
+        DELETE FROM tb_user where user_id in(
+        <foreach collection="id" item="item" separator=",">#{item}</foreach>
+        ) 
+    </delete>
+
+    <update id="updateEntity" parameterType="User">
+        UPDATE tb_user
+        <set>
+        	<if test="username != '' and username != null">
+        		username = #{username},
+        	</if>
+        	<if test="mobile != '' and mobile != null">
+        		mobile = #{mobile},
+        	</if>
+        	<if test="address != '' and address != null">
+        		address = #{address},
+        	</if>
+        	<if test="icCard != '' and icCard != null">
+        		ic_card = #{icCard},
+        	</if>
+        	<!-- 
+        	<if test="balance != '' and balance != null">
+        		balance = #{balance},
+        	</if>
+        	 -->
+        	<if test="carType != '' and carType != null">
+        		car_type = #{carType},
+        	</if>
+        	<if test="numberPlate != '' and numberPlate != null">
+        		number_plate = #{numberPlate},
+        	</if>
+        	<if test="icId != '' and icId != null">
+	        	ic_id = #{icId},
+        	</if>
+        </set> 
+        WHERE user_id = #{userId}
+    </update>
+ 
+    <select id="selectEntityById" parameterType="long" resultType="User">
+        SELECT * FROM tb_user WHERE user_id = #{id}
+    </select>
+    
+    <select id="selectEntityCount" parameterType="User" resultType="int">
+        SELECT count(*) FROM tb_user
+        <where>
+        	openid = #{openid}
+        </where>
+    </select>
+
+    <select id="selectEntityList" parameterType="User" resultType="User">
+        SELECT t.* FROM tb_user t
+        <where>
+        	<if test="username != null and username != ''">
+                t.username = #{username}
+            </if>
+            <if test="mobile != null and mobile != ''">
+                AND t.mobile like '%'||#{mobile}||'%'
+            </if>
+        </where>
+    </select>    
+   
+   
+   <!-- 自定义的扩展SQL -->    
+    <select id="selectUserByOpenid" parameterType="string" resultType="User">
+        SELECT * FROM tb_user WHERE openid = #{openid} limit 1
+    </select>
+    
+    <!-- 修改用户账户金额 -->
+    <update id="updateUserBalance" parameterType="User">
+    	update tb_user set balance=#{balance} where user_id=#{userId}
+    </update>
+    
+</mapper>

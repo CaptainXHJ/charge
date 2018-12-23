@@ -1,0 +1,75 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.math.dao.MathDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+    <!-- 
+    
+    create table t_shushi (id varchar2(32) primary key,
+    	test_id	varchar2(32),
+    	num1 number,
+    	num2 number,
+    	operator varchar2(1),
+    	answer number,
+    	show_order number  
+     ); 
+     drop table t_shushi_s;
+     create table t_shushi_s(
+     	id varchar2(32) primary key,
+     	test_id varchar2(32),
+     	openid varchar2(32),
+     	avatar_url varchar2(512),
+     	nick_name varchar2(512),
+     	second number,
+     	right number,
+     	error number,
+     	answer_date timestamp default CURRENT_TIMESTAMP()
+     );
+     
+     create index idx_shushi_test_id on t_shushi(test_id);
+     create index idx_shushi_s_openid on t_shushi_s(openid);
+     
+     -->
+
+	<!-- 
+	create table t_example(id varchar2(32) primary key,name varchar2(60));
+	-->
+    <insert id="insertShushi" parameterType="Shushi" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_shushi
+        (id,num1,operator,num2,answer,show_order,test_id)
+        VALUES
+        (#{id},#{num1},#{operator},#{num2},#{answer},#{showOrder},#{testId})
+    </insert>
+    
+    <insert id="insertScore" parameterType="Score" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_shushi_s
+        (id,test_id,openid,avatar_url,nick_name,second,right,error)
+        VALUES
+        (#{id},#{testId},#{openid},#{avatarUrl},#{nickName},#{second},#{right},#{error})
+    </insert>
+    
+    <select id="selectShushi" parameterType="string" resultType="Shushi">
+    	select * from t_shushi where test_id=#{testId} order by show_order
+    </select>
+       
+    <select id="selectScore" parameterType="Score" resultType="Score">
+    	select * from t_shushi_s
+    	<where>
+    		<if test="testId != null and testId != ''">
+    			and test_id=#{testId}
+    		</if>
+    		<if test="openid != null and openid != ''">
+    			and openid=#{openid}
+    		</if>
+    	</where>
+    	order by right desc,second asc limit 50
+    </select>
+       
+</mapper>

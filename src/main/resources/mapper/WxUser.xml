@@ -1,0 +1,56 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.weixin.dao.WxUserDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+    <!-- 
+    
+    drop table t_s_user;
+    create table t_s_user(
+    	id varchar2(32) primary key,
+    	openid varchar2(32),
+    	unionid varchar2(32),
+    	nick_name varchar2(512),
+    	show_name varchar2(512),
+    	avatar_url varchar2(512),
+    	user_type varchar2(20) default 'normal',
+    	register_date datetime default CURRENT_TIMESTAMP(),
+    	last_login_date datetime,
+    	login_count number default 0
+    );
+    
+    drop index idx_s_user_openid;
+    create index idx_s_user_openid on t_s_user(openid);    
+     -->
+
+    <insert id="insertUser" parameterType="WxUser" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_s_user
+        (id,openid,nick_name,avatar_url,user_type,unionid)
+        VALUES
+        (#{id},#{openid},#{nickName},#{avatarUrl},'normal',#{unionid})
+    </insert>
+       
+    <select id="selectUserByOpenid" parameterType="string" resultType="WxUser">
+    	select * from t_s_user where openid=#{openid} and rownum=1
+    </select>
+    
+    <update id="updateUser" parameterType="WxUser">
+    	update t_s_user
+    		<set>
+    			last_login_date = CURRENT_TIMESTAMP(),
+    			login_count = login_count+1,
+    			nick_name = #{nickName},
+    			avatar_url = #{avatarUrl},
+	    		<if test="showName!=null and showName!=''">
+		    			show_name = #{showName},
+	    		</if>
+    		</set>
+    	where id=#{id}
+    </update>
+       
+       
+</mapper>

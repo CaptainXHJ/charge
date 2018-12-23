@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>系统首页</title>
+    <link rel="stylesheet" type="text/css" href="../res/lib/iview/styles/iview.css">
+    <link rel="stylesheet" type="text/css" href="../res/css/common.css?v=20171224">
+</head>
+<body class="main">
+
+	<h3>API使用测试及示例2018-09011。</h3>
+	<h4>打开控制台，查看示例代码及结果，代码使用了Vue，大概看一下意思就行。</h4>
+	<div id="app">
+		充电插座ID：<input type="text" v-model="chargedata.id">
+		充电时间(分)：<input type="text" v-model="chargedata.time">
+		用户标识：<input type="text" v-model="chargedata.openid">
+		<button type="button" @click="startChargeClick">启动充电</button>
+		<br>
+		<button type="button" @click="freshUserCost">刷新充电信息</button><br>
+		充电开始时间：{{usercost.chargeBeginTime}}<br>
+		充电结束时间：{{usercost.chargeEndTime}}<br>
+		充电状态：{{usercost.chargeState}}<br>
+		充电标识：{{usercost.costId}}<br>
+		充电功率：{{usercost.power}}<br>
+		
+		充电插座ID：<input type="text" v-model="endChargedata.id">
+		用户标识：<input type="text" v-model="endChargedata.openid">
+		<button type="button" @click="endChargeClick">结束充电</button>
+	</div>
+    <script type="text/javascript" src="../res/lib/jquery-1.12.4.js"></script>
+    <script type="text/javascript" src="../res/lib/vue.js"></script>
+    <script type="text/javascript" src="../res/lib/vue-resource.js"></script>
+    <script type="text/javascript" src="../res/lib/iview/iview.js"></script>
+    <script type="text/javascript" src="../res/js/common.js"></script>
+    
+    <script type="text/javascript">
+    	console.log(window.location.host);
+    	var vue = new Vue({
+    		el:"#app",
+    		data:function(){
+    			//domain:'https://wxbg.guochenkj.com/asset/api/01/charge/'
+    			return {
+    				chargedata:{
+	    				id:2,
+	    				time:60,
+	    				openid:'o5DJ75TtJTGXbMAaMd_vOMBvJ6bg'
+    				},
+    				endChargedata:{
+	    				id:null,
+	    				openid:'o5DJ75TtJTGXbMAaMd_vOMBvJ6bg'
+    				},
+    				usercost:{},
+    				domain:'https://'+window.location.host+'/asset/api/01/charge/'
+    			};
+    		},
+    		methods:{
+    			
+    			//查询用户示例
+    			getUser:function(){
+    				var url = this.domain+"user";
+    				console.log(url);
+    				var params = {openid:'openid'};
+    				this.$http.get(url,{params: params}).then(function(res){
+    					console.log("用户查询结果：",res.data);
+    				});
+    			},
+    			//插入用户
+    			insertUser:function(user){
+    				var url = this.domain+"user";
+    				this.$http.post(url,user).then(function(res){
+    					console.log("插入用户结果：",res.data);
+    				});
+    			},
+    			//修改用户
+    			updateUser: function(user){
+    				var url = this.domain+"user";
+    				this.$http.put(url,user).then(function(res){
+    					console.log("修改用户结果：",res.data);
+    				});
+    			},
+    			//查询用户消费
+    			selectUserCosts: function(userId){
+    				var url = this.domain+"usercosts";
+    				this.$http.get(url,{params:{userId:userId}}).then(function(res){
+    					console.log("查询用户消费结果：",res.data);
+    				});
+    			},
+    			selectUserCost: function(costId){
+    				var url = this.domain+"usercost";
+    				this.$http.get(url,{params:{id:costId}}).then(function(res){
+    					console.log("查询用户消费结果：",res.data);
+    				});
+    			},
+    			//插入消费记录
+    			insertUserCost: function(userCost){
+    				var url = this.domain+"usercost";
+    				this.$http.post(url,userCost).then(function(res){
+    					console.log("插入消费记录：",res.data);
+    				});
+    			},
+    			//修改消费记录
+    			updateUserCost: function(userCost){
+    				var url = this.domain+"usercost";
+    				this.$http.put(url,userCost).then(function(res){
+    					console.log("修改消费记录：",res.data);
+    				});
+    				
+    			},
+    			//查询用户最近一次消费
+    			selectLastUserCosts: function(userId){
+    				var url = this.domain+"lastusercost";
+    				this.$http.get(url,{params:{userId:userId}}).then(function(res){
+    					console.log("查询用户最近一次消费结果：",res.data);
+    				});
+    			},
+    			
+    			//查询用户充值
+    			selectUserSaves: function(userId){
+    				var url = this.domain+"usersaves";
+    				this.$http.get(url,{params:{userId:userId}}).then(function(res){
+    					console.log("查询用户充值结果：",res.data);
+    				});
+    			},
+    			//插入充值记录
+    			insertUserSave: function(userSave){
+    				var url = this.domain+"usersave";
+    				this.$http.post(url,userSave).then(function(res){
+    					console.log("插入充值记录：",res.data);
+    				});
+    			},
+    			//修改充值记录
+    			updateUserSave: function(userSave){
+    				var url = this.domain+"usersave";
+    				this.$http.put(url,userSave).then(function(res){
+    					console.log("修改充值记录：",res.data);
+    				});
+    				
+    			},
+    			sendMsg: function(data){
+    				var url = this.domain+"recvmsg";
+    				this.$http.post(url,data).then(function(res){
+    					console.log(res);
+    				});
+    			},
+    			startCharge: function(data){
+    				var url = this.domain+"startcharge";
+    				console.log("请求地址：",url);
+    				console.log("请求数据：",data);
+    				var self = this;
+    				this.$http.post(url,data).then(function(res){
+    					console.log(res);
+    					this.usercost = res.data.data;
+    				});
+    			},
+    			endCharge: function(data){
+    				var url = this.domain+"endcharge";
+    				console.log("请求地址：",url);
+    				console.log("请求数据：",data);
+    				var self = this;
+    				this.$http.post(url,data).then(function(res){
+    					console.log(res);
+    					//this.usercost = res.data.data;
+    				},function(res){
+    					console.error(res);
+    				});
+    			},
+    			startChargeClick: function(){
+    				var data = {id:this.chargedata.id,time:this.chargedata.time,openid:this.chargedata.openid};
+    				this.startCharge(data);
+    			},
+    			endChargeClick: function(){
+    				var data = {id:this.endChargedata.id,openid:this.endChargedata.openid};
+    				this.endCharge(data);
+    			},
+    			sendControl: function(data){
+    				var url = "http://218.24.71.24:8819/api/v1.0/control";
+    				console.log("发送地址：",url);
+    				console.log("发送数据：",data);
+    				this.$http.post(url,data).then(function(res){
+    					console.log(res);
+    				});
+    			},
+    			postData: function(func,data){
+    				this.$http.post(this.domain+func,data).then(function(res){
+    					console.log(res.bodyText);
+    				},function(res){
+    					console.error(res.bodyText);
+    				});
+    			},
+    			getData: function(func,data){
+    				var url = this.domain+func;
+    				console.log("请求地址：",url);
+    				console.log("请求参数：",data);
+    				this.$http.get(url,{params:data}).then(function(res){
+    					console.log("结果数据：",res.data);
+    				},function(res){
+    					console.error(res.bodyText);
+    				});
+    			},
+    			freshUserCost: function(){
+    				if(this.usercost.costId){
+    					this.selectUserCost(this.usercost.costId);
+    				}
+    			},
+    			selectUserCosts: function(){
+    				this.getData("usercosts",{userId:13});
+    			}
+    			
+    		}
+    	});
+    	/*
+    	vue.getUser();
+    	var user = {username:'test',openid:'sldfdslfksdi=ds',mobile:'13445455'};
+    	vue.insertUser(user);
+    	var newUser={userId:2,username:'新名称'};
+    	vue.updateUser(newUser);
+    	vue.getUser();
+    	
+    	vue.selectLastUserCosts(2);
+    	vue.selectUserCosts(2);
+    	vue.insertUserCost({userId:2,softwareType:'微信',pileId:1,plugId:1,systemType:'android',costMoney:20,chargeMinutes:20});
+    	vue.updateUserCost({costId:1,payMoney:99.99,userId:2});
+    	
+    	vue.selectUserSaves(2);
+    	vue.insertUserSave({userId:2,softwareType:'微信',pileId:1,plugId:1,systemType:'android',saveMoney:20});
+    	vue.updateUserSave({saveId:1,saveMoney:99.99,userId:2});
+    	*/
+    	//var json = {cmd:"20",plugId:1,state:1};
+    	//vue.sendMsg(json);
+    	
+    	//var ctrlParam = {time:120,id:2,openid:'o5DJ75UsodlgEYFuXw8Jmrof47vM'};
+    	//vue.startCharge(ctrlParam);
+    	
+    	//var ctrl ={"chargeHour":1.5,"controlType":1,"deviceid":"180924110001","isLowPower":0,"portN":1};
+    	//vue.sendControl(ctrl);
+    	
+    	//vue.postData("testform",{openid:'ddd',id:2,time:30});
+    	vue.selectUserCosts();
+    </script>
+    
+</body>
+</html>

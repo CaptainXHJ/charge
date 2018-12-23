@@ -1,0 +1,138 @@
+drop table tb_user;
+CREATE TABLE tb_user (
+  user_id bigint(20) primary key AUTO_INCREMENT,
+  username varchar(50) NOT NULL COMMENT '用户名',
+  mobile varchar(20) NOT NULL COMMENT '手机号',
+  password varchar(64) COMMENT '密码',
+  create_time datetime default CURRENT_TIMESTAMP COMMENT '创建时间',
+  ic_card varchar(45) COMMENT '身份证',
+  address varchar(100) COMMENT '常用住址',
+  openid varchar(100) comment '用户的openid',
+  balance int COMMENT '余额',
+  car_type varchar(45) COMMENT '车型',
+  number_plate varchar(45) COMMENT '车牌',
+  ic_id varchar(45) COMMENT '电子车牌'
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='用户表';
+
+
+drop table tb_user_save;
+create table tb_user_save(
+	save_id bigint(20) primary key auto_increment,
+	user_id bigint(20) not null comment '用户ID',
+	bill_no	varchar(32) comment '充值单号',
+	software_type varchar(32) comment '终端软件类型',
+	system_type varchar(32) comment '终端系统类型',
+	save_type varchar(32) comment '充值类型',
+	save_money int comment '充值金额',
+	action_id bigint(20) comment '活动ID',
+	award_money int default 0.0 comment '返现金额',
+	save_time datetime default CURRENT_TIMESTAMP comment '充值时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8  comment '客户充值表';
+
+drop table tb_user_cost;
+create table tb_user_cost(
+	cost_id bigint(20) primary key auto_increment,
+	user_id bigint(20) not null comment '用户ID',
+	software_type varchar(32) comment '终端软件类型',
+	system_type varchar(32) comment '终端系统类型',
+	pile_id bigint(20) not null comment '充电桩ID',
+	plug_id bigint(20) not null comment '充电桩插座ID',	
+	charge_type varchar(32) comment '充电消费类型',
+	charge_minutes int comment '充电时长（分）',
+	demand_minutes int comment '用户要求的充电时长（分）',
+	charge_power int comment '充电功率',
+	cost_money int comment '消费金额',
+	bill_no varchar(32) comment '消费单号',
+	pay_money int comment '支付金额',
+	charge_begin_time datetime comment '充电开始时间',
+	charge_end_time datetime comment '充电结束时间',
+	charge_state varchar(32) comment '充电状态：0-插入插座等待开始，1-开始充电，2-充电结束，3-已付费'
+) comment '客户消费表';
+
+
+
+CREATE DEFINER=`renren`@`%` FUNCTION `fnGetDistance`(`lon1` double,`lat1` double,`lon2` double,`lat2` double) RETURNS double
+    COMMENT '根据经纬度计算距离'
+BEGIN
+	declare vLon1,vLat1,vLon2,vLat2,distance,vShortLon,vShortLat double;
+	declare vResult double;
+	set vLon1 = lon1*PI()/180;
+	set vLat1 = lat1*PI()/180;
+	set vlon2 = lon2*PI()/180;
+	set vLat2 = lat2*PI()/180;
+	/*set vResult = ROUND(6378.138 * 2 * ASIN(SQRT(POW(SIN((lat1*PI()/180 - lat2*PI()/180)/2),2) + COS(lat1 * PI() / 180) * COS(lat2 * PI() / 180) * POW(SIN((lon1 * PI() / 180 - lon2 * PI() / 180) / 2),2))) * 1000);*/
+	set vResult = ROUND(6378.138*2*ASIN(SQRT(POW(SIN((vLat1-vLat2)/2),2)+COS(vLat1)*COS(vLat2)*POW(SIN((vLon1-vLon2)/2),2)))*1000);
+	return vResult;
+END
+
+select fnGetDistance(116.32793,39.94607,121.42575,31.24063);
+
+select t.*,fnGetDistance(t.longitude,t.latitude,121.42575,31.24063) dist from tb_station t where  dist<=5000 order by dist asc  limit 10
+
+drop table tb_d_charge_type;
+create table tb_d_charge_type(
+	type_id varchar(32) primary key,
+	power1 int comment '小功率',
+	power2 int comment '大功率',
+	rate decimal(7,4) comment '费率'
+) comment '功率计费字典表';
+
+alter table tb_user_cost modify column charge_state varchar(32) comment '充电状态：0-插入插座等待开始，1-开始充电，2-充电结束，3-已付费';
+
+
+drop table tb_unifiedorder;
+create table tb_unifiedorder(
+	out_trade_no varchar(32) primary key,
+	total_fee bigint(20),
+	openid varchar(32),
+	product_id bigint(32),
+	attach varchar(255),
+	body varchar(255),
+	system_type varchar(20),
+	software_type varchar(20),
+	pay_type varchar(20),
+	spbill_create_ip varchar(255),
+	order_time datetime,
+	finish_time datetime,
+	order_state varchar(1) comment '0生成、1支付、2失败',
+	remark varchar(255) comment '失败时的原因'
+);
+
+drop table tb_user_log;
+create table tb_user_log(
+	log_id bigint(20) primary key auto_increment,
+	openid varchar(32),
+	log_type varchar(32),
+	log_time datetime,
+	data_id varchar(32),
+	information varchar(255),
+	remark varchar(255)
+);
+
+drop table tb_d_calc_type;
+create table tb_d_calc_type(
+	id varchar(32) primary key,
+	name varchar(60),
+	param1 decimal(7,4) comment '与计算相关的参数1',
+	param2 decimal(7,4) comment '与计算相关的参数2',
+	param3 decimal(7,4) comment '与计算相关的参数3',
+	param4 decimal(7,4) comment '与计算相关的参数4',
+	remark varchar(200)
+) comment '计费方式表';
+
+insert into tb_d_calc_type (id,name,remark) values('0','默认方式','与时间、功率有关的一种计费方式');
+insert into tb_d_calc_type (id,name,remark) values('1','每次6角','与时间、功率无关的计费方式');
+
+
+create or replace view v_usercost AS 
+select cost.*,u.username,u.balance,plug.sn plug_sn,plug.plug_barcode,pile.pile_barcode,pile.pile_name,station.station_id ,station.address,station.calc_type_id
+from tb_user_cost cost,tb_user u ,tb_plug plug,tb_pile pile,tb_station station
+where cost.user_id=u.user_id
+	and cost.plug_id=plug.plug_id and cost.pile_id=pile.pile_id
+	and pile.station_id=station.station_id;
+	
+create or replace view v_plug AS 
+select plug.*,pile.pile_barcode,pile.pile_name,pile.longitude,pile.latitude,station.station_id ,station.address,station.calc_type_id
+from tb_plug plug,tb_pile pile,tb_station station
+where plug.pile_id=pile.pile_id
+	and pile.station_id=station.station_id;

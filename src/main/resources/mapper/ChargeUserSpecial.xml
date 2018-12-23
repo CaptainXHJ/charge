@@ -1,0 +1,8 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.UserSpecialDao">
+
+    <select id="selectByMobile" parameterType="string" resultType="UserSpecial">
+        SELECT * FROM tb_user_special WHERE mobile = #{mobile}
+    </select>
+
+</mapper>

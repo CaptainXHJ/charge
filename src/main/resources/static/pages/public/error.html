@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../../res/lib/iview/styles/iview.css">
+    <link rel="stylesheet" type="text/css" href="../../res/css/common.css?v=20171224">
+    <title>错误提示</title>
+    <style type="text/css">
+        body {
+            background: url('../../res/images/content.jpg') no-repeat center;
+            background-size: cover;
+            /*height: calc(100vh - 54px);*/
+            height:100vh;
+        }
+        h1{
+            font-size: 40px; color: black;
+            padding-bottom:0.5em;
+            margin-left:100px;
+            margin-right:100px;
+            border-bottom:1px solid gray;
+        }
+        h4{
+        	font-size:25px;
+        	font-weight:normal;
+        	width:400px;
+        	margin:10px auto;
+        }
+        div{
+            position: fixed;
+            bottom:0;
+            text-align:center;
+            left:0;
+            right:0;
+        }
+        h3{
+        	text-align:center;
+        }
+    </style>
+</head>
+<body>
+	<h3>系统异常</h3>
+	<h4 id="exception" v-cloak>
+		<strong>代码：</strong>{{code}}<br>
+		<strong>信息：</strong>{{msg}}<br>
+		<strong>资源：</strong>{{uri}}
+	</h4>
+	<div>
+	    <p>©2018 http://wallimn.iteye.com</p>
+	</div>
+    <script type="text/javascript" src="../../res/lib/jquery-1.12.4.js"></script>
+    <script type="text/javascript" src="../../res/lib/vue.js"></script>
+    <script type="text/javascript" src="../../res/lib/vue-resource.js"></script>
+    <script type="text/javascript" src="../../res/lib/iview/iview.js"></script>
+    <script type="text/javascript" src="../../res/js/common.js"></script>
+
+	<script type="text/javascript">
+		var vue= new Vue({
+			el:'#exception',
+			data:function(){
+				return {
+					msg:'',
+					code:'',
+					uri:''
+				}
+			},
+			mounted:function(){
+				var self = this;
+				self.$nextTick(function(){
+					self.$http.get("/api/exception/detail").then(function(response){
+						console.log(response);
+						var json = response.data;
+						if(json){
+							self.msg = json.msg;
+							self.code = json.code;
+							self.uri=json.uri;
+						}
+					});
+				});
+			}
+		});
+	</script>
+</body>
+</html>
+
+

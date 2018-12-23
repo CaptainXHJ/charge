@@ -1,0 +1,119 @@
+2018-06-24
+使用springboot2.0.3Release重新搭建脚手架工程。
+版本升级后，与之前有些细微的变化。
+https、http配置方式变化
+MvcConfiguarer配制变化，原来要继承一个类，现在改为实现一个方法。
+keytool -genkey -alias tomcat  -storetype PKCS12 -keyalg RSA -keysize 2048  -keystore d:\keystore.p12 -validity 3650
+信任自签名证书：chrome://flags/#allow-insecure-localhost 
+
+2018-06-26
+调试成功WebSocket
+
+2018-06-27
+调试通使用属性常量值控制是否使用https协议
+
+2018-06-28
+调试能微信小程序的访问响应。配置hosts，在本地提供服务
+
+2018-06-29
+调通了在TOMCAT中部署的方式。需注释掉WebSocketServer中的@Component、修改启动类
+完成了异常页面的处理
+调整了基础Controller的位置，改入专门的包中。
+
+code换取openid,session_key
+    wx.login({
+      success: res => {
+        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+        console.log("登录成功！");
+        console.log(res);
+        wx.request({
+          url: this.globalData.domain+'api/wx/session',
+          data:{code:res.code},
+          method:'GET',
+          header:{
+            'content-type':'application/json'
+          },
+          success:function(res){
+            console.log("session")
+            console.log(res);
+            self.globalData.session=JSON.parse(res.data);
+            console.log("获取openid成功：", self.globalData.session.openid);
+          }
+        })
+      }
+    })
+    
+    
+2018-06-30
+调试成功服务与微信前后台的交互。
+还有未解决的问题就是：服务器证书。
+
+2018-07-04
+试验通过Referer控制页面请求安全
+如果手工通过http输出，这个值会为空，
+		String referer = this.request.getHeader("Referer");
+		log.debug("请求地址：{}",referer);
+		
+解决springboot跨域配置。
+
+2018-07-05
+申请到阿里云的免费证书，在tomcat上配置成功
+证书转化为jks格式命令：
+keytool -importkeystore -srckeystore #####.pfx -destkeystore your-name.jks -srcstoretype PKCS12 -deststoretype JKS
+
+查看证书命令：
+keytool -keystore -list your-name.jks
+
+keystoreFile="cert/your-name.jks"
+keystorePass="证书密码"
+keyAlias="alias"
+
+2018-07-08
+启用上下文目录
+在服务器上调试成功。
+编出题及存储代码。
+小程序代码能够运行。
+
+2018-07-09
+调试通小程序分享、小程序答案提交。
+
+2018-07-10
+调整好了多个页面间了关系，弄清楚了几个跳转API的适用场景。
+基本完善答题部分。儿子说了两个很好的建议：不要返回按钮、增加草稿纸功能。
+
+2018-07-14
+完成微信用户登记记录功能。
+
+2018-07-15
+建好了通知的后台代码
+
+2018-07-16
+进一步完善后台代码及前台代码。但前后台还没有调通。
+
+2018-07-27
+完善Inform的后台代码
+设计评分数据结构
+完成dao/service/impl相关代码
+
+2018-07-29
+完成了回复后台代码的调试、完善。前台界面也进行了相应的修改。
+
+2018-08-01
+完成图片上传功能。调能前后台代码。
+
+2018-08-13
+基本调通通知管理模块。完善了前后台代码。
+
+2018-08-23
+发现tomcat8.5.4似乎存在一个BUG，导致cpu占用过高。后替换为tomcat8.5.33，看看还存不存在问题。
+
+2019-09-11
+弄明白了允许跨域的设置。
+修正了异常处理的一个BUG
+
+2018-09-26
+调试成功短信功能。
+
+2018-10-05
+解决mysql时区问题。连接字符串中加入&serverTimezone=Asia/Shanghai
+

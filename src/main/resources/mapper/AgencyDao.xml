@@ -1,0 +1,16 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.AgencyDao">
+    <!--修改用户登录错误次数-->
+    <update id="updateAgencyLogincount">
+        update tb_agency set logincount=#{agency.logincount} where id=#{agency.id}
+    </update>
+    <!--修改代理商登录错误次数为0-->
+    <update id="updateAgencyOrginLogincount">
+        UPDATE tb_agency SET logincount=0
+    </update>
+
+    <!--根据手机号查询代理商信息-->
+    <select id="selectAgencyByMobile" resultType="com.wallimn.iteye.sp.asset.bus.charge.model.Agency">
+        select * from tb_agency where mobile=#{mobile}
+    </select>
+</mapper>

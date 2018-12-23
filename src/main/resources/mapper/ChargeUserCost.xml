@@ -1,0 +1,157 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.UserCostDao">
+
+
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+
+    <insert id="insertEntity" parameterType="UserCost" useGeneratedKeys="true" keyProperty="costId">
+    	INSERT INTO tb_user_cost
+        	(user_id,software_type,system_type,pile_id,plug_id,
+        	charge_type,charge_minutes,cost_money,bill_no,pay_money,
+        	demand_minutes,
+        	charge_begin_time,charge_end_time,charge_state,charge_power)
+        VALUES
+        (#{userId},#{softwareType},#{systemType},#{pileId},#{plugId},
+        	#{chargeType},#{chargeMinutes},#{costMoney},#{billNo},#{payMoney},
+        	#{demandMinutes},
+        	#{chargeBeginTime},#{chargeEndTime},#{chargeState},#{chargePower})
+    </insert>
+
+    <delete id="deleteEntityById"  parameterType="long">
+        DELETE FROM tb_user_cost where cost_id = #{id}
+    </delete>
+
+    <delete id="deleteEntityByIds">
+        DELETE FROM tb_user_cost where cost_id in(
+        <foreach collection="id" item="item" separator=",">#{item}</foreach>
+        )
+    </delete>
+
+    <update id="updateEntity" parameterType="UserCost">
+        UPDATE tb_user_cost
+        <set>
+        	<if test="chargeBeginTime!=null">
+        		charge_begin_time = #{chargeBeginTime},
+        	</if>
+        	<if test="chargeEndTime!=null">
+        		charge_end_time = #{chargeEndTime},
+        	</if>
+        	<if test="payMoney !=null">
+        		pay_money = #{payMoney},
+        	</if>
+        	<if test="billNo !=null">
+        		bill_no = #{billNo},
+        	</if>
+        	<if test="costMoney !=null">
+        		cost_money = #{costMoney},
+        	</if>
+        	<if test="chargePower !=null">
+        		charge_power = #{chargePower},
+        	</if>
+        	<if test="chargeMinutes !=null">
+        		charge_minutes = #{chargeMinutes},
+        	</if>
+        	<if test="demandMinutes !=null">
+        		demand_minutes = #{demandMinutes},
+        	</if>
+        	<if test="chargeState !=null">
+        		charge_state = #{chargeState},
+        	</if>
+        </set>
+        WHERE cost_id = #{costId}
+    </update>
+
+    <select id="selectEntityById" parameterType="long" resultType="UserCost">
+        SELECT * FROM tb_user_cost WHERE cost_id = #{id}
+    </select>
+
+    <select id="selectEntityCount" parameterType="UserCost" resultType="int">
+        SELECT count(*) FROM tb_user_cost
+        <where>
+        	cost_id = #{costId}
+        </where>
+    </select>
+
+    <select id="selectEntityList" parameterType="UserCost" resultType="UserCost">
+        SELECT t.* FROM tb_user_cost t
+        <where>
+        	<if test="userId != null and userId != ''">
+                t.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+
+   <!-- 自定义的扩展SQL -->
+    <select id="selectLastUserCostByUserId" parameterType="long" resultType="UserCost">
+        SELECT t.* FROM tb_user_cost t where user_id=#{userId} order by cost_id desc limit 1
+    </select>
+
+
+    <!-- 查询某插座最后一条充电数据 -->
+    <select id="selectLastUserCostByPlugId" parameterType="long" resultType="UserCost">
+        SELECT t.* FROM tb_user_cost t where plug_id=#{plugId} order by cost_id desc limit 1
+    </select>
+
+    <update id="updateUserCost" parameterType="UserCost">
+    	update tb_user_cost
+    	set
+        	<if test="billNo !=null">
+        		bill_no = #{billNo},
+        	</if>
+        	<if test="costMoney !=null">
+        		cost_money = #{costMoney},
+        	</if>
+        	<if test="payMoney !=null">
+        		pay_money = #{payMoney},
+        	</if>
+        	<if test="chargeMinutes !=null">
+        		charge_minutes = #{chargeMinutes},
+        	</if>
+        	<if test="chargeEndTime!=null">
+        		charge_end_time = #{chargeEndTime},
+        	</if>
+        	<if test="chargeState !=null">
+        		charge_state = #{chargeState},
+        	</if>
+    	where cost_id=#{costId}
+    </update>
+
+	<!-- 查询充电时间超限的数据20181212 by chen -->
+	<select id="selectOverTimeCharging" resultType="UserCost">
+		SELECT
+		a.*
+		FROM
+		tb_user_cost a
+		LEFT JOIN tb_user b ON a.user_id = b.user_id
+		WHERE
+		a.charge_state = '20'
+		AND (
+		(
+		TIMESTAMPDIFF(
+		MINUTE,
+		charge_begin_time,
+        NOW()
+		) >= 240
+		AND b.balance &lt; 200
+		)
+		OR (
+		TIMESTAMPDIFF(
+		MINUTE,
+		charge_begin_time,
+		NOW()
+		) >= 480
+		AND b.balance >= 200
+		)
+		)
+		AND NOT EXISTS (
+		SELECT
+		*
+		FROM
+		tb_user_special c
+		WHERE
+		c.mobile = b.mobile
+		)
+    </select>
+</mapper>

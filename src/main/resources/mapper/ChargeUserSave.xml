@@ -1,0 +1,67 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.UserSaveDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+
+    <insert id="insertEntity" parameterType="UserSave" useGeneratedKeys="true" keyProperty="saveId">
+    	INSERT INTO tb_user_save
+        	(user_id,bill_no,software_type,system_type,
+        		save_type,save_money,action_id,award_money)
+        VALUES
+        (#{userId},#{billNo},#{softwareType},#{systemType},
+        	#{saveType},#{saveMoney},#{actionId},#{awardMoney})
+    </insert>
+
+    <delete id="deleteEntityById"  parameterType="long">
+        DELETE FROM tb_user_save where save_id = #{id}
+    </delete>
+
+    <delete id="deleteEntityByIds">
+        DELETE FROM tb_user_save where save_id in(
+        <foreach collection="id" item="item" separator=",">#{item}</foreach>
+        ) 
+    </delete>
+
+	<!-- 这个应该没有什么要改的 -->
+    <update id="updateEntity" parameterType="UserSave">
+        UPDATE tb_user_save
+        <set>
+        	<if test="awardMoney !=null">
+        		award_money = #{awardMoney},
+        	</if>
+        	<if test="saveMoney !=null">
+        		save_money = #{saveMoney},
+        	</if>
+        	<if test="billNo !=null">
+        		bill_no = #{billNo},
+        	</if>
+        </set> 
+        WHERE save_id = #{saveId}
+    </update>
+ 
+    <select id="selectEntityById" parameterType="long" resultType="UserSave">
+        SELECT * FROM tb_user_save WHERE save_id = #{id}
+    </select>
+    
+    <select id="selectEntityCount" parameterType="UserSave" resultType="int">
+        SELECT count(*) FROM tb_user_save
+        <where>
+        	save_id = #{saveId}
+        </where>
+    </select>
+
+    <select id="selectEntityList" parameterType="UserSave" resultType="UserSave">
+        SELECT t.* FROM tb_user_save t
+        <where>
+        	<if test="userId != null and userId != ''">
+                t.user_id = #{userId}
+            </if>
+        </where>
+    </select>    
+   
+   
+   <!-- 自定义的扩展SQL -->    
+    
+</mapper>

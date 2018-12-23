@@ -1,0 +1,80 @@
+/*BEM，块、元素、修饰符*/
+.red{
+    border:1px solid red;
+}
+.green{
+    border:1px solid green;
+}
+.blue{
+    border:1px solid blue;
+}
+.w-page-header{
+    height:62px;
+    background-color:#001c7d;/*025aa5*/
+}
+.w-page-header__logo,.w-page-header__title{
+    float:left;
+}
+.w-page-header__logo{
+    width:80px;
+    height:100%;
+    background: url(../images/logo.png) 50% 50% no-repeat;
+    margin-left:48px;
+    margin-right:20px;
+}
+.w-page-header__title{
+    font-size:30px;
+    font-weight:bold;
+    color:#fff;
+    line-height: 62px;
+    vertical-align: middle;
+    margin:0;
+}
+
+
+.page__title{
+	margin-top:1em;
+	margin-bottom:0.5em;
+	text-align:center;
+}
+
+/*用于防止VUE组件闪烁*/
+[v-cloak]{
+	display:none;
+}
+
+.ivu-table-cell{
+	padding-left:2px;
+	padding-right:2px;
+}
+
+.ivu-table-small td{
+	height:30px;
+}
+body.main{
+	margin:10px;
+}
+
+.listtab__search{
+	text-align:'right';
+	margin-bottom:10px;
+}
+[readonly]{
+	background-color:#fbfbfb;
+}
+
+text.highcharts-credits{
+	display:none;
+}
+
+.ivu-modal{
+	top:30px;
+}
+
+ .ivu-table-cell  .ivu-checkbox-wrapper{
+	margin-right:0;
+}
+
+.ivu-form-item-content .ivu-table-cell span{
+	line-height:1.5em;
+}

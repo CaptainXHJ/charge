@@ -1,0 +1,226 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.inform.dao.InformDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+    <!-- database h2 -->
+    <!-- 
+    
+     drop table t_inform;
+     create table t_inform(
+     	id varchar2(32) primary key,
+     	openid varchar2(32),
+     	nick_name varchar2(255),
+     	avatar_url varchar2(255),
+     	cover_url varchar2(255),
+     	inform_date datetime default CURRENT_TIMESTAMP(),
+     	inform_title varchar2(255),
+     	inform_content varchar2(1000),
+     	inform_host varchar2(255),
+     	open_count number default 0,
+     	attach_flag char(1) default '0',
+     	private_flag char(1) default '0',
+     	remark_flag char(1) default '0'
+     );
+     
+     drop table t_inform_r;
+     create table t_inform_r(
+     	id varchar2(32) primary key,
+     	inform_id varchar2(32),
+     	openid varchar2(32),
+     	nick_name varchar2(255),
+     	show_name varchar2(255),
+     	avatar_url varchar2(255),
+     	reply_content varchar2(512),
+     	reply_date datetime default CURRENT_TIMESTAMP()
+     );
+     drop index   idx_inform_r_inform_id;
+     create index idx_inform_r_inform_id on t_inform_r(inform_id);
+     
+     drop table t_inform_r_a;
+     create table t_inform_r_a(
+     	id varchar2(32) primary key,
+     	reply_id varchar2(32),
+     	attach_url varchar2(512),
+     	attach_date datetime default CURRENT_TIMESTAMP()
+     );
+     drop index idx_inform_r_a_reply_id;
+     create index idx_inform_r_a_reply_id on t_inform_r_a(reply_id);
+     
+     
+     drop table t_inform_r_r;
+     create table t_inform_r_r(
+     	id varchar2(32) primary key,
+     	reply_id varchar2(32),
+     	openid varchar2(32),
+     	nick_name varchar2(255),
+     	avatar_url varchar2(512),
+     	remark_content varchar2(512),
+     	remark_score number,
+     	remark_date datetime default CURRENT_TIMESTAMP()
+     );
+     -->
+
+    <insert id="insertInform" parameterType="Inform" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_inform
+        	(id,openid,nick_name,avatar_url,cover_url,inform_title,inform_content,inform_date,attach_flag,private_flag,remark_flag,inform_host)
+        VALUES
+        	(#{id},#{openid},#{nickName},#{avatarUrl},#{coverUrl},#{informTitle},#{informContent},CURRENT_TIMESTAMP(),#{attachFlag},#{privateFlag},#{remarkFlag},#{informHost})
+    </insert>
+    
+    <insert id="insertInformReply" parameterType="InformReply" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_inform_r
+        	(id,inform_id,openid,nick_name,avatar_url,reply_content,reply_date)
+        VALUES
+        	(#{id},#{informId},#{openid},#{nickName},#{avatarUrl},#{replyContent},CURRENT_TIMESTAMP())
+    </insert>
+    
+    <insert id="insertInformReplyAttach" parameterType="InformReplyAttach" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_inform_r_a
+        	(id,reply_id,attach_url,attach_date)
+        VALUES
+        	(#{id},#{replyId},#{attachUrl},CURRENT_TIMESTAMP())
+    </insert>
+    
+    
+    
+    
+    <select id="selectInformByOpenid" parameterType="string" resultType="Inform">
+    	select * from t_inform where openid=#{id} order by inform_date desc
+    </select>
+       
+    <select id="selectInformReplyByInformId" parameterType="string" resultType="InformReplyVo">
+    	select * from t_inform_r where inform_id=#{id}
+    	<if test="openid!=null and openid!=''">
+    		and openid=#{openid}
+    	</if>
+    	order by reply_date asc
+    </select>
+       
+    <select id="selectInformReplyAttachByReplyId" parameterType="string" resultType="InformReplyAttach">
+    	select * from t_inform_r_a where reply_id=#{id} order by attach_date asc
+    </select>
+       
+    <select id="selectInformById" parameterType="string" resultType="Inform">
+    	select * from t_inform where id=#{id}
+    </select>
+       
+    <select id="selectInformReplyById" parameterType="string" resultType="InformReply">
+    	select * from t_inform_r where id=#{id}
+    </select>
+       
+    <select id="selectInformReplyByInformIdAndOpenid" parameterType="string" resultType="InformReplyVo">
+    	select * from t_inform_r where inform_id=#{informId} and openid=#{openid} and rownum=1
+    </select>
+       
+    <select id="selectInformReplyRemarkByReplyIdAndOpenid" parameterType="string" resultType="InformReplyRemark">
+    	select * from t_inform_r_r where reply_id=#{replyId} and openid=#{openid} and rownum=1
+    </select>
+       
+    <select id="selectInformReplyAttachById" parameterType="string" resultType="InformReplyAttach">
+    	select * from t_inform_r_a where id=#{id}
+    </select>
+       
+    <update id="updateInformOpenCount">
+    	update t_inform set open_count=open_count+1 where id=#{id}
+    </update>
+
+	<update id="updateInform" parameterType="Inform">
+		update t_inform 
+		<set>
+			inform_title=#{informTitle},
+			inform_content=#{informContent},
+			inform_host=#{informHost},
+			attach_flag=#{attachFlag},
+			remark_flag=#{remarkFlag},
+			private_flag=#{privateFlag},
+			cover_url = #{coverUrl},
+			inform_date=CURRENT_TIMESTAMP()
+		</set>
+		where id=#{id}
+	</update>
+	<update id="updateInformReply" parameterType="InformReply">
+		update t_inform_r 
+		<set>
+			reply_content=#{replyContent},
+			reply_date=CURRENT_TIMESTAMP(),
+		</set>
+		where id=#{id}
+	</update>
+	<update id="updateInformReplyAttach" parameterType="InformReplyAttach">
+		update t_inform_r_a 
+		<set>
+			attach_url=#{url},
+			attach_date=CURRENT_TIMESTAMP(),
+		</set>
+		where id=#{id}
+	</update>
+	
+	<select id="selectCoverUrlByOpenid" resultType="string">
+		select distinct cover_url from t_inform where openid=#{id} order by inform_date desc limit 5 
+	</select>
+	
+	<!-- 删除通知 -->
+	<delete id="deleteInform" parameterType="java.lang.String">
+		delete from t_inform_r_a where reply_id in (select id from t_inform_r where inform_id='${id}');
+		delete from t_inform_r_r where reply_id in (select id from t_inform_r where inform_id='${id}');
+		delete from t_inform_r where inform_id='${id}';
+		delete from t_inform where id='${id}';
+	</delete>
+       
+    <delete id="deleteInformReply" parameterType="java.lang.String">
+    	delete from t_inform_r_a where reply_id='${id}';
+    	delete from t_inform_r_r where reply_id='${id}';
+    	delete from t_inform_r where id='${id}';
+    </delete>
+    
+    <delete id="deleteInformReplyAttach" parameterType="java.lang.String">
+    	delete from t_inform_r_a where id='${id}';
+    </delete>
+    
+    <!-- 回复评分部分 -->
+    <insert id="insertInformReplyRemark" parameterType="InformReplyRemark" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_inform_r_r
+        	(id,reply_id,openid,nick_name,avatar_url,remark_content,remark_score)
+        VALUES
+        	(#{id},#{replyId},#{openid},#{nickName},#{avatarUrl},#{remarkContent},#{remarkScore})
+    </insert>
+    
+	<update id="updateInformReplyRemark" parameterType="InformReplyRemark">
+		update t_inform_r_r 
+		<set>
+			remark_content=#{remarkContent},
+			remark_score=#{remarkScore}
+		</set>
+		where id=#{id}
+	</update>
+       
+    <select id="selectInformReplyRemarkByReplyId" parameterType="string" resultType="InformReplyRemark">
+    	select * from t_inform_r_r where reply_id=#{id}
+    </select>
+    
+    <select id="selectInformReplyRemarkById" parameterType="string" resultType="InformReplyRemark">
+    	select * from t_inform_r_r where id=#{id}
+    </select>
+
+    <delete id="deleteInformReplyRemark">
+    	delete from t_inform_r_r where id=#{id}
+    </delete>
+    
+    <select id="selectInformReplyRemarkStat" parameterType="java.lang.String" resultType="map">
+    	select avg(remark_score) remark_score,count(*) remark_count from t_inform_r_r where reply_id=#{id}
+    </select>
+</mapper>

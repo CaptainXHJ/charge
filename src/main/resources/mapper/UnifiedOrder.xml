@@ -1,0 +1,83 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.UnifiedOrderDao">
+
+     
+    <!-- 微信支付的统一定单 -->
+    <!-- 
+  `out_trade_no` varchar(32) NOT NULL,
+  `total_fee` bigint(20) DEFAULT NULL,
+  `openid` varchar(32) DEFAULT NULL,
+  `product_id` bigint(32) DEFAULT NULL,
+  `attach` varchar(255) DEFAULT NULL,
+  `body` varchar(255) DEFAULT NULL,
+  `spbill_create_ip` varchar(255) DEFAULT NULL,
+  `order_time` datetime DEFAULT NULL,
+  `finish_time` datetime DEFAULT NULL,
+  `order_state` varchar(1) DEFAULT NULL COMMENT '0生成、1支付、2失败',
+  `remark` varchar(255) DEFAULT NULL COMMENT '失败时的原因',
+     -->
+
+    <insert id="insertEntity" parameterType="UnifiedOrder">
+    	INSERT INTO tb_unifiedorder
+        (out_trade_no,total_fee,openid,
+        	product_id,attach,body,spbill_create_ip,
+        	system_type,software_type,pay_type,
+        	order_time,order_state,remark)
+        VALUES
+        (#{outTradeNo},#{totalFee},#{openid},
+        	#{productId},#{attach},#{body},#{spbillCreateIp},
+        	#{systemType},#{softwareType},#{payType},
+        	#{orderTime},#{orderState},#{remark})
+    </insert>
+
+    <delete id="deleteEntityById" parameterType="string">
+        DELETE FROM tb_unifiedorder where out_trade_no = #{id}
+    </delete>
+
+    <delete id="deleteEntityByIds">
+        DELETE FROM tb_unifiedorder where out_trade_no in(
+        <foreach collection="id" item="item" separator=",">#{item}</foreach>
+        ) 
+    </delete>
+
+	<!-- 只修改这几个参数 -->
+    <update id="updateEntity" parameterType="UnifiedOrder">
+        UPDATE tb_unifiedorder
+        <set>
+        	<if test="orderState != '' and orderState != null">
+        		order_state = #{orderState},
+        	</if>
+        	<if test="finishTime != null">
+        		finish_time = #{finishTime},
+        	</if>
+        	<if test="remark != '' and remark != null">
+        		remark = #{remark},
+        	</if>
+        </set> 
+        WHERE out_trade_no =#{outTradeNo}
+    </update>
+ 
+    <select id="selectEntityById" parameterType="string" resultType="UnifiedOrder">
+        SELECT * FROM tb_unifiedorder WHERE out_trade_no = #{id}
+    </select>
+    
+    <select id="selectEntityCount" parameterType="UnifiedOrder" resultType="int">
+        SELECT count(*) FROM tb_unifiedorder
+        <where>
+        	out_trade_no = #{outTradeNo}
+        </where>
+    </select>
+
+    <select id="selectEntityList" parameterType="UnifiedOrder" resultType="UnifiedOrder">
+        SELECT t.* FROM tb_unifiedorder t
+        <where>
+        	<if test="openid != null and openid != ''">
+                t.openid = #{openid}
+            </if>
+        </where>
+        order by order_time desc
+    </select>    
+   
+
+    
+</mapper>

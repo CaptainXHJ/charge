@@ -1,0 +1,59 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.example.dao.ExampleDao">
+
+     
+    <!-- 用户处理表区域 -->
+    <!-- 增删改查查的顺序 -->
+
+	<!-- 
+	create table t_example(id varchar2(32) primary key,name varchar2(60));
+	-->
+    <insert id="insertEntity" parameterType="Example" useGeneratedKeys="true" keyProperty="id">
+    	<selectKey keyProperty="id" order="BEFORE" resultType="string">
+            select replace(sys_guid(),'-','') from dual
+        </selectKey>
+        INSERT INTO t_example
+        (id,name)
+        VALUES
+        (#{id},#{name})
+    </insert>
+
+    <delete id="deleteEntityById"  parameterType="string">
+        DELETE FROM t_example where id = #{id}
+    </delete>
+
+    <delete id="deleteEntityByIds">
+        DELETE FROM t_example where id in(
+        <foreach collection="id" item="item" separator=",">#{item}</foreach>
+        ) 
+    </delete>
+
+    <update id="updateEntity" parameterType="Example">
+        UPDATE t_example set name = #{name}
+        WHERE id = #{id}
+    </update>
+ 
+    <select id="selectEntityById" parameterType="string" resultType="Example">
+        SELECT * FROM t_example WHERE id = #{id}
+    </select>
+    
+    <select id="selectEntityCount" parameterType="Example" resultType="int">
+        SELECT count(*) FROM t_example
+        <where>
+        	id = #{id}
+        </where>
+    </select>
+
+    <select id="selectEntityList" parameterType="Example" resultType="Example">
+        SELECT t.* FROM t_example t
+        <where>
+        	<if test="id != null and id != ''">
+                t.id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                AND t.name like '%'||#{name}||'%'
+            </if>
+        </where>
+    </select>    
+        
+</mapper>

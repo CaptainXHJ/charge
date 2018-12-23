@@ -1,0 +1,134 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wallimn.iteye.sp.asset.bus.charge.dao.ChargeOtherDao">
+
+     
+ 	<select id="selectPileById" resultType="Pile">
+ 		select * from tb_pile where pile_id=#{id} limit 1
+ 	</select>
+ 	<select id="selectPilesByStationId" resultType="Pile">
+ 		select * from tb_pile where station_id=#{id} order by pile_serial
+ 	</select>
+    
+ 	<select id="selectPlugsByStationId" resultType="PlugVo">
+		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 			and pile.station_id=#{id} order by pile.pile_serial, plug.sn
+  	</select>
+    
+ 	<select id="selectPlugById" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 		and plug.plug_id=#{id} limit 1
+ 	</select>
+    
+ 	<select id="selectPileByBarcode" resultType="Pile">
+ 		select * from tb_pile where pile_barcode=#{barcode} limit 1
+ 	</select>
+    
+ 	<select id="selectPlugByBarcode" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 		and plug.plug_barcode=#{barcode} limit 1
+ 	</select>
+    
+ 	<select id="selectPlugsByBarcode" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 		and pile.pile_barcode=#{barcode} order by plug.sn
+ 	</select>
+    <!--普通用户获取插头信息-->
+ 	<select id="selectPlugsById" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 		and pile.pile_id=#{id} order by plug.sn
+ 	</select>
+	<!--特殊用户获取插头信息-->
+	<select id="selectPlugsByIdSpec" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id
+ 		from tb_plug plug,tb_d_calc_type ct
+ 		where plug.pile_id=#{id} and ct.id=#{calcTypeId} order by plug.sn
+ 	</select>
+
+    
+ 	<select id="selectPlugBySn" resultType="PlugVo">
+ 		select plug.*,ct.name calc_type_name,ct.id calc_type_id 
+ 		from tb_plug plug,tb_pile pile,tb_station station,tb_d_calc_type ct 
+ 		where plug.pile_id=pile.pile_id and pile.station_id=station.station_id and station.calc_type_id=ct.id
+ 		and plug.sn=#{sn} limit 1
+ 	</select>
+    
+ 	<select id="selectStationById" resultType="Station">
+ 		select * from tb_station where station_id=#{id} limit 1
+ 	</select>
+    
+ 	<select id="selectStationByPileId" resultType="Station">
+ 		select s.* from tb_station s,tb_pile p where s.station_id=p.station_id and p.pile_id=#{id} limit 1
+ 	</select>
+    
+ 	<select id="selectStationByPlugId" resultType="Station">
+ 		select s.* 
+ 			from tb_station s,tb_pile pile,tb_plug plug 
+ 		where s.station_id=pile.station_id and pile.pile_id=plug.pile_id and plug.plug_id=#{id} limit 1
+ 	</select>
+ 	
+ 	<select id="selectChargeTypeList" resultType="ChargeType">
+ 		select t.* from tb_d_charge_type t order by type_id asc
+ 	</select>
+    
+ 	<select id="selectChargeType" resultType="ChargeType">
+ 		<![CDATA[
+ 		select t.* from tb_d_charge_type t where t.power1<=#{power} and (t.power2 is null or t.power2>#{power}) limit 1
+ 		]]>
+ 	</select>
+ 	<!-- 根据插头查询费率 -->
+ 	<select id="selectChargeTypeListByPlugId" resultType="ChargeType">
+ 		select t.type_id, t.power1,t.power2, round(t.rate*s.rate,2) rate 
+ 		from tb_d_charge_type t,tb_station s,tb_pile pile,tb_plug plug 
+ 		where s.station_id=pile.station_id and pile.pile_id=plug.pile_id and plug.plug_id=#{id} 
+ 		order by type_id asc
+ 	</select>
+ 	<!-- 根据插头查询费率 -->
+ 	<select id="selectChargeTypeByPlugId" resultType="ChargeType">
+ 		<![CDATA[
+ 		select t.type_id, t.power1,t.power2, round(t.rate*s.rate,2) rate 
+ 		from tb_d_charge_type t,tb_station s,tb_pile pile,tb_plug plug 
+ 		where s.station_id=pile.station_id and pile.pile_id=plug.pile_id and plug.plug_id=#{id}
+			and t.power1<=#{power} and (t.power2 is null or t.power2>#{power})
+		]]>
+ 	</select>
+    
+ 	<select id="selectStationsByPosition" resultType="StationVo">
+ 		select x.* from (select t.*,fnGetDistance(t.longitude,t.latitude,#{lon},#{lat}) distance from tb_station t) x
+ 		<where>
+ 			<if test="distance!='' and distance!=null">
+		 		<![CDATA[
+ 				distance<=#{distance}
+		 		]]>
+ 			</if>
+ 		</where>
+ 		order by if(isnull(x.distance),0,1) desc,x.distance asc limit #{limit}
+ 	</select>
+ 	<select id="selectPilesByPosition" resultType="PileVo">
+ 		select x.*,s.address 
+ 			from (select t.*,fnGetDistance(t.longitude,t.latitude,#{lon},#{lat}) distance from tb_pile t) x,tb_station s
+ 		<where>
+	 		x.station_id=s.station_id
+ 			<if test="distance!='' and distance!=null">
+		 		<![CDATA[
+ 				and distance<=#{distance}
+		 		]]>
+ 			</if>
+ 		</where>
+ 		order by if(isnull(x.distance),0,1) desc,x.distance asc limit #{limit}
+ 	</select>
+   
+   
+   <select id="selectCalcTypeById" resultType="CalcType">
+   	select * from tb_d_calc_type where id=#{id}
+   </select> 
+</mapper>
